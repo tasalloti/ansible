@@ -1,0 +1,78 @@
+https://www.learnlinux.tv/getting-started-with-ansible-16-templates/
+
+
+Location of OpenSSH daemon config file (used as an example for the template)
+
+ /etc/ssh/sshd_config
+
+In the role directory
+
+Create the directory for templates:
+
+ mkdir templates
+
+Copy the sshd config file from a server to this directory with the *.j2 extension:
+
+ sshd_config_ubuntu.j2
+
+Note: “ubuntu” is included in the name, because if you use more than one distro, it’s a good idea to start creating the template based on an existing file. Each distro has different paths, so DON’T use the same template for all distributions!
+Adding a variable inside the OpenSSH config file template
+
+Inside the template(s), add:
+
+ AllowUsers Template:Ssh users
+
+Note: Make sure the “AllowUsers” option isn’t already in the file, if so, replace it with the above)
+Adding the variable to a host
+
+Inside the host_vars directory, we should already have a hosts variable file for each server. Add the new variable inside the file(s):
+
+ ssh_users: "jay simone"
+ ssh_template_file: sshd_config_ubuntu.j2
+
+Note: Make sure you change the usernames in the ssh_users variable to be the actual usernames you’re using for yourself as well as the ansible user.
+Having Ansible render the template
+
+Inside the base role, in the main.yml file, add this play:
+
+ - name: openssh | generate sshd_config file from template
+   tags: ssh
+   template:
+     src: "Template:Ssh template file"
+     dest: /etc/ssh/sshd_config
+     owner: root
+     group: root
+     mode: 0644
+   notify: restart_sshd
+
+Create a handler to restart the OpenSSH daemon
+
+Inside the base role, create a directory for handlers:
+
+ mkdir handlers
+
+Go inside that directory, and create a ‘main.yml’ file:
+
+ cd handlers
+ vim main.yml
+
+ - name: restart_sshd
+   service:
+     name: sshd
+     state: restarted
+
+Run the playbook
+
+ ansible-playbook site.yml
+
+Adding a default value to the variable
+
+In the template, change the “AllowUsers” line to:
+
+ AllowUsers Template:Ssh users
+
+Taking it a bit further, add another variable to the template to determine whether or not password authentication is allowed for a host:
+
+ PasswordAuthentication Template:Passwd auth
+
+Note: Be sure to add the new PasswordAuthentication variable to your host_vars files.
