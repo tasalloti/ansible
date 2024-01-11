@@ -1,6 +1,6 @@
 **Generate an ssh key**
 
-  ssh-keygen -t ed25519 -C "jay default"
+  ssh-keygen -t ed25519 -C "My New Key!"
 
 Copy the ssh key to the server(s)
 
